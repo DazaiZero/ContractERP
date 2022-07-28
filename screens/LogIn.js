@@ -1,4 +1,4 @@
-import React, { Component, useContext } from "react";
+import React, { Component, useContext, useState } from "react";
 import {
   Platform,
   StyleSheet,
@@ -14,9 +14,42 @@ import {
 } from "react-native";
 import { AuthContext } from "../context";
 const { height, width } = Dimensions.get("screen");
+import Amplify, { Auth, API, graphqlOperation } from "aws-amplify";
+import awsconfig from "../src/aws-exports";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+Amplify.configure(awsconfig);
 
-export const LogIn = (props) => {
+export const LogIn = ({ route, navigation }) => {
   const ErpAuth = useContext(AuthContext);
+  const [showPass, setShowPass] = useState(false);
+  const [username, setUserN] = useState("Admin");
+  const [password, setPassword] = useState("1234567890");
+
+  const SignIn = async () => {
+    console.log("Signning IN");
+    Auth.signIn(username, password)
+      .then((user) => {
+        console.log("user");
+        console.log(user);
+        if (user.challengeName === "NEW_PASSWORD_REQUIRED") {
+          const { requiredAttributes } = user.challengeParam; // the array of required attributes, e.g ['email', 'phone_number']
+          console.log("requiredAttributes");
+          console.log(JSON.stringify(requiredAttributes));
+          // ErpAuth.setUserToken("User");
+          navigation.navigate("ProfileSetup", {
+            user: JSON.stringify(user),
+            userName: username,
+          });
+        } else {
+          AsyncStorage.setItem("user", JSON.stringify(user));
+          AsyncStorage.setItem("UserToken", JSON.stringify(user));
+          ErpAuth.setUserToken(user);
+        }
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  };
 
   return (
     <KeyboardAvoidingView
@@ -32,12 +65,14 @@ export const LogIn = (props) => {
               <Text style={styles.text}>LogIn</Text>
               <View style={styles.username_textinput}>
                 <TextInput
+                  onChangeText={(text) => setUserN(text)}
                   placeholder="Username"
                   style={styles.username_text}
                 ></TextInput>
               </View>
               <View style={styles.password_Textinput}>
                 <TextInput
+                  onChangeText={(text) => setPassword(text)}
                   placeholder="Password"
                   secureTextEntry={true}
                   style={styles.password_text}
@@ -46,7 +81,11 @@ export const LogIn = (props) => {
               <TouchableOpacity
                 style={[styles.containerButton, styles.button]}
                 onPress={() => {
-                  ErpAuth.setUserToken("UserID-AdminAccess");
+                  if (password != "" && username != "") {
+                    SignIn();
+                  } else {
+                    console.log("Password or username is Incorrect");
+                  }
                 }}
               >
                 <Text style={styles.enter}>Enter</Text>

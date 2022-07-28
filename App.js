@@ -15,17 +15,30 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createStackNavigator } from "@react-navigation/stack";
 import { AuthContext } from "./context";
 import { LogIn } from "./screens/LogIn";
-import { Home } from "./screens/Home";
-import { Supervisor } from "./screens/Supervisor";
-import { AddSupervisor } from "./screens/AddSupervisor";
-import { AddSite } from "./screens/AddSite";
-import { CompletedSite } from "./screens/CompletedSite";
-import { ListSites } from "./screens/ListSites";
-import { SiteImages } from "./screens/SiteImages";
-import { SiteInformation } from "./screens/SiteInformation";
-import { SitesOngoing } from "./screens/SitesOngoing";
-import { WorkerInformation } from "./screens/WorkerInformation";
-import { WorkerList } from "./screens/WorkerList";
+import { Home } from "./screens/Admin/Home";
+import { Supervisor } from "./screens/Admin/Supervisor";
+import { AddSupervisor } from "./screens/Admin/AddSupervisor";
+import { AddSite } from "./screens/Admin/AddSite";
+import { CompletedSite } from "./screens/Admin/CompletedSite";
+import { ListSites } from "./screens/Admin/ListSites";
+import { SiteImages } from "./screens/Admin/SiteImages";
+import { SiteInformation } from "./screens/Admin/SiteInformation";
+import { SitesOngoing } from "./screens/Admin/SitesOngoing";
+import { WorkerInformation } from "./screens/Admin/WorkerInformation";
+import { WorkerList } from "./screens/Admin/WorkerList";
+import { ProfileSetup } from "./screens/Admin/ProfileSetup";
+import { AccountingSupervisor } from "./screens/Admin/AccountingSupervisor";
+import { Attendance } from "./screens/Admin/Attendance";
+import { BuilderSupplier } from "./screens/Admin/BuilderSupplier";
+import { BuilderSupplierTransactions } from "./screens/Admin/BuilderSupplierTransactions";
+import { MaterialEntry } from "./screens/Admin/MaterialEntry";
+import { MaterialType } from "./screens/Admin/MaterialType";
+import { Home_Super } from "./screens/Supervisor/Home";
+import { AddWorker } from "./screens/Supervisor/AddWorker";
+import { SupervisorExpenses } from "./screens/Supervisor/SupervisorExpenses";
+import { WorkerAttendanceSupervisor } from "./screens/Supervisor/WorkerAttendanceSupervisor";
+import { WorkerManagementSupervisor } from "./screens/Supervisor/WorkerManagementSupervisor";
+import { WorkersPayment } from "./screens/Supervisor/WorkersPayment";
 
 const STYLES = ["default", "dark-content", "light-content"];
 const TRANSITIONS = ["fade", "slide", "none"];
@@ -42,6 +55,11 @@ export const UnAuthStack = ({}) => {
         component={LogIn}
         options={{ headerShown: false }}
       />
+      <UnAuthStackNav.Screen
+        name="ProfileSetup"
+        component={ProfileSetup}
+        options={{ headerShown: false }}
+      />
     </UnAuthStackNav.Navigator>
   );
 };
@@ -51,7 +69,69 @@ export const AuthStack = ({}) => {
     <AuthStackNav.Navigator>
       <AuthStackNav.Screen
         name="Home"
-        component={Home}
+        component={Home_Super}
+        options={{ headerShown: false }}
+      />
+      {/* Supervisor Stack */}
+      <AuthStackNav.Screen
+        name="AddWorker"
+        component={AddWorker}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="SupervisorExpenses"
+        component={SupervisorExpenses}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="WorkerAttendanceSupervisor"
+        component={WorkerAttendanceSupervisor}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="WorkerManagementSupervisor"
+        component={WorkerManagementSupervisor}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="WorkersPayment"
+        component={WorkersPayment}
+        options={{ headerShown: false }}
+      />
+      {/* //// */}
+      <AuthStackNav.Screen
+        name="Home_Super"
+        component={Home_Super}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="AccountingSupervisor"
+        component={AccountingSupervisor}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="BuilderSupplier"
+        component={BuilderSupplier}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="BuilderSupplierTransactions"
+        component={BuilderSupplierTransactions}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="Attendance"
+        component={Attendance}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="MaterialEntry"
+        component={MaterialEntry}
+        options={{ headerShown: false }}
+      />
+      <AuthStackNav.Screen
+        name="MaterialType"
+        component={MaterialType}
         options={{ headerShown: false }}
       />
       <AuthStackNav.Screen
@@ -127,6 +207,7 @@ export default function App() {
   };
 
   const InitApp = async () => {
+    //AsyncStorage.clear();
     await AsyncStorage.getItem("IntroVisited", (err, token) => {
       setIntroVisited(token);
     });
@@ -164,7 +245,7 @@ export default function App() {
         hidden={false}
       />
       <NavigationContainer style={styles.container}>
-        {UserToken ? <AuthStack></AuthStack> : <UnAuthStack></UnAuthStack>}
+        {!UserToken ? <AuthStack></AuthStack> : <UnAuthStack></UnAuthStack>}
       </NavigationContainer>
     </AuthContext.Provider>
   );

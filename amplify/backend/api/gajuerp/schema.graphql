@@ -1,0 +1,250 @@
+# This "input" configures a global authorization rule to enable public access to
+# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
+# input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
+
+type Users
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID! @primaryKey
+  userId: ID!
+    @index(
+      name: "getUserDataById"
+      sortKeyFields: ["name"]
+      queryField: "getUserDataById"
+    )
+  name: String!
+  username: String!
+    @index(
+      name: "byUsername"
+      sortKeyFields: ["name"]
+      queryField: "byUsername"
+    )
+  passwoard: String!
+  firstName: String!
+  lastName: String!
+  email: String!
+  phone_number: String!
+  userType: String!
+  profilePic: String
+  isUserActivated: String!
+  siteId: ID @index(name: "UsersbySiteId", sortKeyFields: ["username"])
+  site: Sites @belongsTo(fields: ["siteId"])
+}
+
+type SiteImages
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID! @primaryKey
+  siteId: ID @index(name: "ImagesbySiteId", sortKeyFields: ["uri"])
+  site: Sites @belongsTo(fields: ["siteId"])
+  uri: String!
+  fileKey: String!
+}
+
+type Sites
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID! @primaryKey
+  siteId: ID!
+    @index(
+      name: "bySitesId"
+      sortKeyFields: ["siteName"]
+      queryField: "bySitesId"
+    )
+  siteName: String!
+  StartDate: String!
+  EndDate: String
+  buiderCost: Float
+  WorkPaidAmount: Float
+  isImageUploaded: Boolean!
+  siteImages: [SiteImages] @hasMany(indexName: "ImagesbySiteId", fields: ["id"])
+  city: String!
+    @index(
+      name: "BySiteCity"
+      sortKeyFields: ["state"]
+      queryField: "BySiteCity"
+    )
+  state: String!
+  address: String!
+  supervisors: [Users] @hasMany(indexName: "UsersbySiteId", fields: ["id"])
+  workers: [Workers] @hasMany(indexName: "WorkerbySiteId", fields: ["id"])
+}
+
+type Supplier
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID!
+  supplierId: ID!
+    @index(
+      name: "bySupplierId"
+      sortKeyFields: ["state"]
+      queryField: "bySupplierId"
+    )
+  supplierName: String!
+    @index(
+      name: "bySupplier"
+      sortKeyFields: ["city", "state"]
+      queryField: "bySupplier"
+    )
+  supplierBussiness: String!
+  supplierGST: String!
+  contact: String!
+  address: String!
+  city: String!
+  state: String!
+  materials: [Materials] @hasMany(indexName: "ByMaterialId", fields: ["id"])
+}
+
+type Materials
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID!
+  materialId: ID!
+    @index(
+      name: "ByMaterialId"
+      sortKeyFields: ["Name", "type"]
+      queryField: "ByMaterialId"
+    )
+  Name: String!
+  type: String!
+}
+
+type Workers
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID!
+  workerId: ID!
+    @index(
+      name: "ByWorkerId"
+      sortKeyFields: ["workerName"]
+      queryField: "ByWorkerId"
+    )
+  workerName: String!
+  workerImage: String!
+  #siteId: String! # Need To Clarify If The worker is for only 1 Site or Worker Can Have Multiple Sites
+  documents: String!
+  address: String!
+  attendedDays: Float
+  paidAmount: Float
+  payableAmount: Float
+  costPerday: Float
+  addedBy: String!
+  siteId: ID @index(name: "WorkerbySiteId", sortKeyFields: ["workerName"])
+  site: Sites @belongsTo(fields: ["siteId"])
+}
+
+type Suptransact
+  @model
+  @auth(
+    rules: [
+      { allow: private, provider: iam }
+      { allow: public, provider: iam, operations: [create, update, read] }
+      {
+        allow: owner
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+      {
+        allow: private
+        provider: userPools
+        operations: [create, update, delete, read]
+      }
+    ]
+  ) {
+  id: ID! @primaryKey
+  transactionType: Int!
+  transactionAmount: Float!
+  transactionDate: String! @index(name: "transactionByDate")
+  transactionWith: String!
+  transactionBy: String!
+}
