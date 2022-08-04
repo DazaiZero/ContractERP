@@ -1,4 +1,4 @@
-import React, { Component, useContext, useState } from "react";
+import React, { Component, useContext, useEffect, useState } from "react";
 import {
   StyleSheet,
   View,
@@ -16,7 +16,8 @@ const { height, width } = Dimensions.get("screen");
 import Amplify, { Auth, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "../../src/aws-exports";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createUsers } from "../../src/graphql/mutations";
+import { createUsers, updateUsers } from "../../src/graphql/mutations";
+import { byUsername } from "../../src/graphql/queries";
 Amplify.configure(awsconfig);
 import { CognitoUser, CognitoUserPool } from "amazon-cognito-identity-js";
 
@@ -32,11 +33,12 @@ export const ProfileSetup = ({ route, navigation }) => {
   const [newPassword, setNewPassword] = useState("1234567890");
   const [confirmPassword, setConfirmPassword] = useState("1234567890");
   const [genderSelected, setSelectedGender] = useState(1);
+  const [currentUserDt, setCurrentUserDt] = useState();
   const { user, userName } = route.params;
 
   const confirmProfileSetup = async () => {
     const user_tmp = JSON.parse(user);
-    //const currentUser = await Auth.currentAuthenticatedUser();
+
     const pool = new CognitoUserPool({
       UserPoolId: user_tmp.pool.userPoolId,
       ClientId: user_tmp.pool.clientId,
@@ -69,6 +71,7 @@ export const ProfileSetup = ({ route, navigation }) => {
             //phone_number: contact,
             //address: address,
             name: firstName,
+            preferred_username: userName,
             // middle_name: "Not Set",
           }
         )
@@ -76,11 +79,12 @@ export const ProfileSetup = ({ route, navigation }) => {
             // at this time the user is logged in if no MFA required
             console.log("cognitoUser");
             console.log(cognitoUser);
-            registerUser(cognitoUser);
+            navigation.navigate("LogIn");
           })
           .catch((e) => {
             console.log("error");
             console.log(e.message);
+            navigation.navigate("LogIn");
           });
       } else {
         console.log("Incorrect Password");
@@ -88,13 +92,80 @@ export const ProfileSetup = ({ route, navigation }) => {
     }
   };
 
-  const registerUser = async (user) => {
+  const updateToken = async (id, usertype) =>
+    await API.graphql({
+      query: updateUsers,
+      variables: {
+        input: {
+          id: id,
+          userId: userName,
+          name: firstName,
+          username: userName,
+          passwoard: confirmPassword,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phone_number: contact,
+          userType: usertype,
+          profilePic: "",
+          isUserActivated: true,
+        },
+      },
+      authMode: "AWS_IAM",
+    })
+      .then((userdata) => {
+        console.log("userCreated");
+        console.log(userdata);
+        confirmProfileSetup();
+      })
+      .catch((err) => {
+        console.log("err : ", err);
+      });
+
+  const registerUser = async () => {
     try {
-      /* const usertype = userName == "Admin" ? "Admin" : "Supervisor";
+      const usertype =
+        userName == "aniketvaidya101@gmail.com" ? "Admin" : "Supervisor";
       console.log("goot");
       //console.log(Auth.user.attributes);
-      const userdata = await API.graphql({
-        query: createUsers,
+      console.log(
+        firstName +
+          " " +
+          userName +
+          " " +
+          confirmPassword +
+          " " +
+          firstName +
+          " " +
+          lastName +
+          " " +
+          email +
+          " " +
+          contact +
+          " " +
+          usertype
+      );
+      const getUser = await API.graphql({
+        query: byUsername,
+        variables: {
+          username: userName,
+        },
+        authMode: "AWS_IAM",
+      })
+        .then((res) => {
+          console.log(res);
+          console.log(res.data.byUsername.items[0].id);
+          const selectedID = res.data.byUsername.items[0].id;
+          const selectedType = res.data.byUsername.items[0].userType;
+          updateToken(selectedID, selectedType);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      getUser;
+
+      /* const userdata = await API.graphql({
+        query: updateUsers,
         variables: {
           input: {
             userId: userName,
@@ -107,7 +178,7 @@ export const ProfileSetup = ({ route, navigation }) => {
             phone_number: contact,
             userType: usertype,
             profilePic: "",
-            
+            isUserActivated: true,
           },
         },
         authMode: "AWS_IAM",
@@ -115,7 +186,7 @@ export const ProfileSetup = ({ route, navigation }) => {
         .then((userdata) => {
           console.log("userCreated");
           console.log(userdata);
-          navigation.navigate("LogIn");
+          confirmProfileSetup();
         })
         .catch((err) => {
           console.log("err : ", err);
@@ -305,8 +376,8 @@ export const ProfileSetup = ({ route, navigation }) => {
                 <TouchableOpacity
                   style={styles.saveButton}
                   onPress={() => {
-                    confirmProfileSetup();
-                    //registerUser();
+                    //confirmProfileSetup();
+                    registerUser();
                   }}
                 >
                   <Text style={styles.save}>Save</Text>

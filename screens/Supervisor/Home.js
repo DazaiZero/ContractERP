@@ -1,4 +1,10 @@
-import React, { Component, useContext } from "react";
+import React, {
+  Component,
+  useContext,
+  useRef,
+  useEffect,
+  useState,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -7,130 +13,250 @@ import {
   Image,
   Text,
   Dimensions,
+  DrawerLayoutAndroid,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import { AuthContext } from "../../context";
 const { height, width } = Dimensions.get("screen");
+import Amplify, { Auth } from "aws-amplify";
+import awsconfig from "../../src/aws-exports";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+Amplify.configure(awsconfig);
 
 export const Home_Super = ({ route, navigation }) => {
   const ErpAuth = useContext(AuthContext);
+  const drawer = useRef(null);
+  const [username, setUsername] = useState();
+  const [drawerPosition, setDrawerPosition] = useState("left");
+  const changeDrawerPosition = () => {
+    if (drawerPosition === "left") {
+      setDrawerPosition("right");
+    } else {
+      setDrawerPosition("left");
+    }
+  };
+
+  const init = async () => {
+    await AsyncStorage.getItem("username", (err, token) => {
+      setUsername(token);
+    });
+  };
+
+  useEffect(() => {
+    init();
+  }, []);
+
+  const navigationView = () => (
+    <View style={styles.Containernv}>
+      <View style={styles.rectnavigation}>
+        <Text style={styles.welcomenavigation}>Welcome</Text>
+        <Text style={styles.aniketVaidyanavigation}>{username}</Text>
+        <TouchableOpacity
+          style={styles.rect2navigation}
+          onPress={() => {
+            Auth.signOut().then(() => {
+              ErpAuth.setUserToken("");
+              ErpAuth.setUserType("");
+              AsyncStorage.clear();
+            });
+          }}
+        >
+          <Text style={styles.logOutnavigation}>Log Out</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.homeMiddleBckStack}>
-        <View style={styles.homeMiddleBck}></View>
-        <View style={styles.optionsScroll}>
-          <ScrollView
-            horizontal={false}
-            // contentContainerStyle={styles.optionsScroll_contentContainerStyle}
-          >
-            <View style={styles.siteOngoingButtonRow}>
-              <TouchableOpacity
-                style={styles.addSupervisorButton}
-                onPress={() => {
-                  navigation.push("AddWorker");
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/supervisor.png")}
-                  resizeMode="contain"
-                  style={styles.addsupervisor_img}
-                ></Image>
-                <Text style={styles.addSupervisor}>Add Worker</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.workerManagementButtonRow}>
-              <TouchableOpacity
-                style={styles.workerManagementButton}
-                onPress={() => {
-                  navigation.push("WorkerManagementSupervisor");
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/pngkit_construction-worker-png_698032.png")}
-                  resizeMode="contain"
-                  style={styles.workermanage_img}
-                ></Image>
-                <Text style={styles.workerManagement}>Worker Management</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.accSupervisorButton}
-                //disabled={true}
-                onPress={() => {
-                  navigation.push("SupervisorExpenses");
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/businessman1.png")}
-                  resizeMode="contain"
-                  style={styles.accountSupervisor_img}
-                ></Image>
-                <Text style={styles.accountingSupervisor}>Expenses</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.builderSupplierButtonRow}>
-              <TouchableOpacity
-                style={styles.builderSupplierButton}
-                //disabled={true}
-                onPress={() => {
-                  navigation.push("WorkersPayment");
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/toppng.com-suppliers-png-512x5121.png")}
-                  resizeMode="contain"
-                  style={styles.image}
-                ></Image>
-                <Text style={styles.builderSupplier}>Workers Payment</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.attendanceButton}
-                //disabled={true}
-                onPress={() => {
-                  navigation.push("WorkerAttendanceSupervisor");
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/pngkit_punch-png_1169242.png")}
-                  resizeMode="contain"
-                  style={styles.image2}
-                ></Image>
-                <Text style={styles.attendance}>Attendance</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.completedSiteButtonRow}>
-              <TouchableOpacity
-                style={styles.siteImageButton}
-                onPress={() => {
-                  navigation.push("SiteImages", { parent: "Home" });
-                }}
-              >
-                <Image
-                  source={require("../../assets/images/pngkey.com-gallery-icon-png-505515.png")}
-                  resizeMode="contain"
-                  style={styles.image4}
-                ></Image>
-                <Text style={styles.siteImages}>Site Images</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
+      <DrawerLayoutAndroid
+        ref={drawer}
+        drawerWidth={width * 0.55}
+        drawerPosition={drawerPosition}
+        renderNavigationView={navigationView}
+      >
+        <View style={styles.homeMiddleBckStack}>
+          <View style={styles.homeMiddleBck}></View>
+          <View style={styles.optionsScroll}>
+            <ScrollView
+              horizontal={false}
+              // contentContainerStyle={styles.optionsScroll_contentContainerStyle}
+            >
+              <View style={styles.siteOngoingButtonRow}>
+                <TouchableOpacity
+                  style={styles.addSupervisorButton}
+                  onPress={() => {
+                    navigation.push("AddWorker");
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/supervisor.png")}
+                    resizeMode="contain"
+                    style={styles.addsupervisor_img}
+                  ></Image>
+                  <Text style={styles.addSupervisor}>Add Worker</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.workerManagementButtonRow}>
+                <TouchableOpacity
+                  style={styles.workerManagementButton}
+                  onPress={() => {
+                    navigation.push("WorkerManagementSupervisor");
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/pngkit_construction-worker-png_698032.png")}
+                    resizeMode="contain"
+                    style={styles.workermanage_img}
+                  ></Image>
+                  <Text style={styles.workerManagement}>Worker Management</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.accSupervisorButton}
+                  //disabled={true}
+                  onPress={() => {
+                    navigation.push("SupervisorExpenses");
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/businessman1.png")}
+                    resizeMode="contain"
+                    style={styles.accountSupervisor_img}
+                  ></Image>
+                  <Text style={styles.accountingSupervisor}>Expenses</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.builderSupplierButtonRow}>
+                <TouchableOpacity
+                  style={styles.builderSupplierButton}
+                  //disabled={true}
+                  onPress={() => {
+                    navigation.push("WorkersPayment");
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/toppng.com-suppliers-png-512x5121.png")}
+                    resizeMode="contain"
+                    style={styles.image}
+                  ></Image>
+                  <Text style={styles.builderSupplier}>Workers Payment</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.attendanceButton}
+                  //disabled={true}
+                  onPress={() => {
+                    navigation.push("WorkerAttendanceSupervisor");
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/pngkit_punch-png_1169242.png")}
+                    resizeMode="contain"
+                    style={styles.image2}
+                  ></Image>
+                  <Text style={styles.attendance}>Attendance</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.completedSiteButtonRow}>
+                <TouchableOpacity
+                  style={styles.siteImageButton}
+                  onPress={() => {
+                    navigation.push("SiteImages", { parent: "Home" });
+                  }}
+                >
+                  <Image
+                    source={require("../../assets/images/pngkey.com-gallery-icon-png-505515.png")}
+                    resizeMode="contain"
+                    style={styles.image4}
+                  ></Image>
+                  <Text style={styles.siteImages}>Site Images</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
         </View>
-      </View>
-      <View style={styles.home_Header}>
-        <Text style={styles.welcome}>Welcome</Text>
-        <View style={styles.adminRow}>
-          <Text style={styles.admin}>Supervisor</Text>
-          <Text style={styles.aniketVaidya}>Aniket Vaidya</Text>
-          <TouchableOpacity style={styles.siteOptionButton}>
-            <Icon name="ios-options" style={styles.icon1}></Icon>
-          </TouchableOpacity>
+        <View style={styles.home_Header}>
+          <Text style={styles.welcome}>Welcome</Text>
+          <View style={styles.adminRow}>
+            <Text style={styles.admin}>Supervisor</Text>
+            <Text style={styles.aniketVaidya}>{username}</Text>
+            <TouchableOpacity
+              style={styles.siteOptionButton}
+              onPress={() => drawer.current.openDrawer()}
+            >
+              <Icon name="ios-options" style={styles.icon1}></Icon>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </DrawerLayoutAndroid>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  Containernv: {
+    backgroundColor: "rgba(54,138,236,1)",
+    width: width,
+    height: height,
+  },
+  rectnavigation: {
+    width: width * 0.75,
+    height: height * 0.85,
+    backgroundColor: "rgba(197,230,223,1)",
+    borderRadius: 53,
+    borderWidth: 1,
+    borderColor: "#000000",
+    shadowColor: "rgba(0,0,0,1)",
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    elevation: 5,
+    shadowOpacity: 0.05,
+    shadowRadius: 0,
+    marginTop: height * 0.02,
+    marginLeft: -width * 0.26,
+  },
+  welcomenavigation: {
+    fontFamily: "roboto-regular",
+    color: "#121212",
+    fontSize: height * 0.02,
+    marginTop: height * 0.02,
+    marginLeft: width * 0.28,
+  },
+  aniketVaidyanavigation: {
+    fontFamily: "roboto-regular",
+    color: "#121212",
+    fontSize: height * 0.035,
+    marginTop: height * 0.005,
+    marginLeft: width * 0.28,
+  },
+  rect2navigation: {
+    width: width * 0.5,
+    height: height * 0.06,
+    backgroundColor: "rgba(80,227,194,1)",
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: "#000000",
+    shadowColor: "rgba(0,0,0,1)",
+    shadowOffset: {
+      width: 3,
+      height: 3,
+    },
+    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 0,
+    marginTop: height * 0.05,
+    marginLeft: width * 0.2,
+  },
+  logOutnavigation: {
+    fontFamily: "roboto-regular",
+    color: "#121212",
+    textAlign: "center",
+    textAlignVertical: "center",
+    fontSize: height * 0.03,
+    marginTop: height * 0.005,
+    marginLeft: width * 0.03,
+  },
   container: {
     backgroundColor: "rgba(54,138,236,1)",
     width: width,

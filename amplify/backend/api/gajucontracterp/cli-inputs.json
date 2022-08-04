@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "serviceConfiguration": {
+    "apiName": "gajucontracterp",
+    "serviceName": "AppSync",
+    "gqlSchemaPath": "E:\\Project_Working\\HexSmart Projects\\smartuerp_dev\\amplify\\backend\\api\\gajucontracterp\\schema.graphql",
+    "defaultAuthType": {
+      "mode": "AMAZON_COGNITO_USER_POOLS",
+      "cognitoUserPoolId": "authgajuauthresource"
+    },
+    "additionalAuthTypes": [
+      {
+        "mode": "AWS_IAM"
+      }
+    ],
+    "conflictResolution": {}
+  }
+}

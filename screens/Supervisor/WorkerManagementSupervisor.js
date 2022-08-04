@@ -14,7 +14,14 @@ import { Dropdown } from "react-native-element-dropdown";
 import IoniconsIcon from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIconsIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { AuthContext } from "../../context";
+import Amplify, { Auth, API, graphqlOperation } from "aws-amplify";
+import awsconfig from "../../src/aws-exports";
+Amplify.configure(awsconfig);
+import FlashMessage from "react-native-flash-message";
+import { ShowNotification } from "../../src/utils/utils";
 const { height, width } = Dimensions.get("screen");
+import { listWorkers, listSites } from "../../src/graphql/queries";
 //
 const dataTmp = [
   { name: "Site 1", id: "1" },
@@ -47,54 +54,72 @@ export const WorkerManagementSupervisor = ({ route, navigation }) => {
   const [value, setValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [data, setData] = useState([]);
+  const [dataSite, setDataSite] = useState([]);
+  const [dataWorker, setDataWorker] = useState([]);
   const [query, setQuery] = useState("");
   const [fullData, setFullData] = useState([]);
+  const [SelectedSite, setSelectedSite] = useState(null);
   const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const onRefresh = async () => {
     setIsLoading(true);
-    await sleep(2000);
+    await getWorkersList();
     setIsLoading(false);
   };
   useEffect(() => {
     setIsLoading(true);
-    setData(dataW);
-    setFullData(dataW);
-
+    getSite();
     setIsLoading(false);
-    /* fetch("https://randomuser.me/api/?seed=1&page=1&results=20")
-      .then((response) => response.json())
-      .then((response) => {
-        setData(response.results);
-
-        console.log(response.results);
-        // ADD THIS
-        setFullData(response.results);
-
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        setIsLoading(false);
-        setError(err);
-      }); */
   }, []);
+
+  const getSite = async () => {
+    const siteData = await API.graphql({
+      query: listSites,
+    }).then((res) => {
+      console.log("site List");
+      console.log(res);
+      setDataSite(res.data.listSites.items);
+    });
+    siteData;
+  };
 
   const handleSearch = (text) => {
     const formattedQuery = text.toLowerCase();
     const filteredData = filter(fullData, (user) => {
       return contains(user, formattedQuery);
     });
-    setData(filteredData);
+    setDataWorker(filteredData);
     setQuery(text);
   };
 
-  const contains = ({ name, id }, query) => {
+  const contains = ({ workerName, id }, query) => {
     console.log(query);
-    if (name.includes(query)) {
+    if (workerName.includes(query)) {
       return true;
     }
     return false;
+  };
+
+  useEffect(() => {
+    if (SelectedSite != null) {
+      console.log("Selected Site");
+      console.log(SelectedSite);
+      getWorkersList();
+    }
+  }, [SelectedSite]);
+
+  const getWorkersList = async () => {
+    console.log(SelectedSite);
+    const WorkerData = await API.graphql({
+      query: listWorkers,
+      filter: { siteId: SelectedSite },
+    }).then((res) => {
+      console.log("Worker List");
+      console.log(res);
+      setDataWorker(res.data.listWorkers.items);
+      setFullData(res.data.listWorkers.items);
+    });
+    WorkerData;
   };
 
   const renderHeader = () => (
@@ -145,18 +170,19 @@ export const WorkerManagementSupervisor = ({ route, navigation }) => {
           selectedTextStyle={styles.selectedTextStyle}
           inputSearchStyle={styles.inputSearchStyle}
           iconStyle={styles.iconStyle}
-          data={dataTmp}
+          data={dataSite}
           search
           maxHeight={300}
-          labelField="name"
+          labelField="siteName"
           valueField="id"
           placeholder={!isFocus ? "Select Site" : "..."}
           searchPlaceholder="Search Site"
-          value={value}
+          value={SelectedSite}
           onFocus={() => setIsFocus(true)}
           onBlur={() => setIsFocus(false)}
           onChange={(item) => {
-            setValue(item.value);
+            console.log(item);
+            setSelectedSite(item.id);
             setIsFocus(false);
           }}
           renderLeftIcon={() => (
@@ -173,7 +199,7 @@ export const WorkerManagementSupervisor = ({ route, navigation }) => {
         <FlatList
           horizontal={false}
           keyExtractor={(item) => item.id}
-          data={data}
+          data={dataWorker}
           onRefresh={onRefresh}
           refreshing={isLoading}
           ListHeaderComponent={renderHeader}
@@ -185,7 +211,7 @@ export const WorkerManagementSupervisor = ({ route, navigation }) => {
           renderItem={(item) => (
             <View style={styles.rect8}>
               <View style={styles.workrName}>
-                <Text style={styles.workerName}>{item.item.name}</Text>
+                <Text style={styles.workerName}>{item.item.workerName}</Text>
               </View>
               <View style={styles.absentRow}>
                 <TouchableOpacity style={styles.absent}>
@@ -233,7 +259,7 @@ const styles = StyleSheet.create({
     fontFamily: "roboto-regular",
     color: "rgba(54,138,236,1)",
     textAlign: "center",
-    marginLeft: -width * 0.25,
+    marginLeft: -width * 0.0,
     alignSelf: "center",
     width: width * 0.5,
   },

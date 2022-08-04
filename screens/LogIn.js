@@ -17,6 +17,8 @@ const { height, width } = Dimensions.get("screen");
 import Amplify, { Auth, API, graphqlOperation } from "aws-amplify";
 import awsconfig from "../src/aws-exports";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { ActivityIndicator } from "react-native-paper";
+import { color } from "react-native-reanimated";
 Amplify.configure(awsconfig);
 
 export const LogIn = ({ route, navigation }) => {
@@ -24,10 +26,12 @@ export const LogIn = ({ route, navigation }) => {
   const [showPass, setShowPass] = useState(false);
   const [username, setUserN] = useState("Admin");
   const [password, setPassword] = useState("1234567890");
+  const [isLoading, setLoading] = useState(false);
 
   const SignIn = async () => {
     console.log("Signning IN");
-    Auth.signIn(username, password)
+    setLoading(true);
+    await Auth.signIn(username, password)
       .then((user) => {
         console.log("user");
         console.log(user);
@@ -35,18 +39,50 @@ export const LogIn = ({ route, navigation }) => {
           const { requiredAttributes } = user.challengeParam; // the array of required attributes, e.g ['email', 'phone_number']
           console.log("requiredAttributes");
           console.log(JSON.stringify(requiredAttributes));
-          // ErpAuth.setUserToken("User");
+          //ErpAuth.setUserToken("User");
           navigation.navigate("ProfileSetup", {
             user: JSON.stringify(user),
             userName: username,
           });
         } else {
-          AsyncStorage.setItem("user", JSON.stringify(user));
-          AsyncStorage.setItem("UserToken", JSON.stringify(user));
-          ErpAuth.setUserToken(user);
+          console.log("Sign In with");
+
+          const user = Auth.currentAuthenticatedUser()
+            .then((res) => {
+              let tmp = res.signInUserSession.idToken.payload["cognito:groups"];
+              //console.log(tmp[0]);
+              let tmptyp = JSON.stringify(tmp);
+
+              console.log(tmptyp);
+              console.log();
+              AsyncStorage.setItem("username", username).then(() => {
+                ErpAuth.setUsername(username);
+              });
+              if (username == "aniketvaidya101@gmail.com") {
+                AsyncStorage.setItem("userType", "admin").then(() => {
+                  ErpAuth.setUserType("admin");
+                });
+              }
+              if (tmptyp != null && tmptyp != "") {
+                if (tmptyp.match("supervisor")) {
+                  AsyncStorage.setItem("userType", tmptyp).then(() => {
+                    ErpAuth.setUserType(tmptyp);
+                  });
+                }
+              }
+
+              AsyncStorage.setItem("user", JSON.stringify(res));
+              AsyncStorage.setItem("UserToken", JSON.stringify(res));
+            })
+            .finally(() => {
+              setLoading(false);
+              ErpAuth.setUserToken(user);
+            });
         }
       })
       .catch((e) => {
+        setLoading(false);
+        alert("Password or username is Incorrect");
         console.log(e);
       });
   };
@@ -59,8 +95,10 @@ export const LogIn = ({ route, navigation }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.container}>
           <View style={styles.backGroundMain}>
-            <Text style={styles.smartErp}>SMART ERP</Text>
-            <Text style={styles.loremIpsum}>HexSmart Technologies .llp</Text>
+            <Text style={styles.smartErp}>Contractors ERP</Text>
+            <Text style={styles.loremIpsum}>
+              Contractors Bussiness Solution
+            </Text>
             <View style={styles.rect}>
               <Text style={styles.text}>LogIn</Text>
               <View style={styles.username_textinput}>
@@ -84,11 +122,20 @@ export const LogIn = ({ route, navigation }) => {
                   if (password != "" && username != "") {
                     SignIn();
                   } else {
-                    console.log("Password or username is Incorrect");
+                    alert("Password or username is Incorrect");
                   }
                 }}
+                disabled={isLoading}
               >
-                <Text style={styles.enter}>Enter</Text>
+                {isLoading ? (
+                  <View>
+                    <ActivityIndicator size={"large"} color={"white"} />
+                  </View>
+                ) : (
+                  <View>
+                    <Text style={styles.enter}>Enter</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
           </View>

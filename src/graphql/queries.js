@@ -397,6 +397,19 @@ export const listSites = /* GraphQL */ `
         state
         address
         supervisors {
+          items {
+            email
+            firstName
+            id
+            lastName
+            isUserActivated
+            name
+            phone_number
+            siteId
+            userId
+            username
+            userType
+          }
           nextToken
         }
         workers {

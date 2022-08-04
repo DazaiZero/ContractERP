@@ -23,23 +23,26 @@ import { ShowNotification } from "../../src/utils/utils";
 import { createUsers } from "../../src/graphql/mutations";
 import { Dropdown } from "react-native-element-dropdown";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { listSites } from "../../src/graphql/queries";
+import { createWorkers } from "../../src/graphql/mutations";
 
 const { height, width } = Dimensions.get("screen");
 
 export const AddWorker = ({ route, navigation }) => {
   const ErpAuth = useContext(AuthContext);
   const [genderSelected, setSelectedGender] = useState();
-  const [Fname, setFname] = useState();
-  const [Lname, setLname] = useState();
+  const [WorkerName, setWorkerName] = useState();
+  const [Address, setAddress] = useState();
   const [username, setUsername] = useState();
   const [TempPassword, setTempPassword] = useState();
-  const [Email, setEmail] = useState();
-  const [MobileNumber, setMobileNumber] = useState();
-  const [address, setAdress] = useState();
-  const [value, setValue] = useState(null);
+  const [PDAmount, setPDAmount] = useState();
+  const [TBAmount, setTBAmount] = useState();
+  const [selectedFlag, setselectedFlag] = useState();
+  const [SelectedSitevalue, setSelectedSiteValue] = useState(null);
   const [isFocus, setIsFocus] = useState(false);
+  const [siteData, setSiteData] = useState([]);
 
-  const dataTmp = [
+  /* const dataTmp = [
     { name: "Site 1", id: "1" },
     { name: "Site 2", id: "2" },
     { name: "Site 3", id: "3" },
@@ -48,70 +51,69 @@ export const AddWorker = ({ route, navigation }) => {
     { name: "Site 6", id: "6" },
     { name: "Site 7", id: "7" },
     { name: "Site 8", id: "8" },
-  ];
+  ]; */
 
-  const NewSupervisor = async () => {
-    console.log("got Here");
-    let response = await fetch(
-      "https://m535y0zfua.execute-api.ap-south-1.amazonaws.com/dev/userManagement",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-          email: Email,
-          phone: MobileNumber,
-        }),
-      }
-    );
-    let json = await response.json().then(() => {
-      AddSupervisorDB();
-    });
-    console.log(json);
-  };
-
-  const AddSupervisorDB = async () => {
-    console.log("AddUserDB");
-    const idTmp = Math.random().toString(36).substr(2, 10);
-    console.log(idTmp);
-    const userdata = await API.graphql({
-      query: createUsers,
-      variables: {
-        input: {
-          id: idTmp,
-          userId: idTmp,
-          name: username,
-          username: username,
-          passwoard: "",
-          firstName: Fname,
-          lastName: Lname,
-          email: Email,
-          phone_number: MobileNumber,
-          userType: 2,
-          profilePic: "",
-          isUserActivated: false,
-          siteId: "NA",
-        },
-      },
+  const getSite = async () => {
+    const siteData = await API.graphql({
+      query: listSites,
     }).then((res) => {
-      console.log("res");
+      console.log("site List");
       console.log(res);
-      ShowNotification("Supervisor Added Successfull", 1);
-      navigation.push("Supervisor");
+      setSiteData(res.data.listSites.items);
     });
+    siteData;
   };
 
   useEffect(() => {
-    if (Fname != "" && Lname != "") {
-      const tmp = Fname + "_" + Lname;
+    getSite();
+  }, []);
+
+  const AddWorker = async () => {
+    console.log("AddUserDB");
+    const idTmp = Math.random().toString(36).substr(2, 10);
+    console.log(SelectedSitevalue);
+    if (SelectedSitevalue != "") {
+      const userdata = await API.graphql({
+        query: createWorkers,
+        variables: {
+          input: {
+            id: idTmp,
+            workerId: idTmp,
+            workerName: WorkerName,
+            workerImage: "",
+            documents: "",
+            address: Address,
+            attendedDays: 0.0,
+            paidAmount: 0,
+            payableAmount: TBAmount,
+            costPerday: PDAmount,
+            addedBy: username,
+            siteId: SelectedSitevalue,
+          },
+        },
+      }).then((res) => {
+        console.log("Worker Added Successfull");
+        console.log(res);
+        ShowNotification("Worker Added Successfull", 1);
+        navigation.push("Home");
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (WorkerName != "" && Address != "") {
+      const tmp = WorkerName + "_" + Address;
       setUsername(tmp);
     } else {
       setUsername("Username");
     }
-  }, [Fname, Lname]);
+  }, [WorkerName, Address]);
+
+  useEffect(() => {
+    if (SelectedSitevalue != "Select Site" && SelectedSitevalue != "") {
+      setselectedFlag(true);
+    }
+  }, [SelectedSitevalue]);
 
   return (
     <KeyboardAvoidingView
@@ -124,7 +126,7 @@ export const AddWorker = ({ route, navigation }) => {
             <TouchableOpacity
               style={styles.headerbackButton1}
               onPress={() => {
-                navigation.push("Home_Super");
+                navigation.push("Home");
               }}
             >
               <IoniconsIcon
@@ -141,18 +143,18 @@ export const AddWorker = ({ route, navigation }) => {
               selectedTextStyle={styles.selectedTextStyle}
               inputSearchStyle={styles.inputSearchStyle}
               iconStyle={styles.iconStyle}
-              data={dataTmp}
+              data={siteData}
               search
               maxHeight={300}
-              labelField="name"
+              labelField="siteName"
               valueField="id"
               placeholder={!isFocus ? "Select Site" : "..."}
               searchPlaceholder="Search Site"
-              value={value}
+              value={SelectedSitevalue}
               onFocus={() => setIsFocus(true)}
               onBlur={() => setIsFocus(false)}
               onChange={(item) => {
-                setValue(item.value);
+                setSelectedSiteValue(item.value);
                 setIsFocus(false);
               }}
               renderLeftIcon={() => (
@@ -172,63 +174,72 @@ export const AddWorker = ({ route, navigation }) => {
                 contentContainerStyle={styles.scrollArea1_contentContainerStyle}
               >
                 <View style={styles.rect}>
-                  <TouchableOpacity
-                    style={styles.profilepicbutton}
-                    disabled={true}
-                  >
-                    <SimpleLineIconsIcon
-                      name="user-follow"
-                      style={styles.icon}
-                    ></SimpleLineIconsIcon>
-                  </TouchableOpacity>
-                  {/* <Text style={styles.addProfilePicture}>
-                  Add Profile Picture
-                </Text> */}
-                  <View style={styles.firstNameGrop}>
-                    <Text style={styles.firstName}>Worker Name</Text>
-                    <TextInput
-                      onChangeText={(text) => setFname(text)}
-                      placeholder="Worker Name"
-                      style={styles.firstNameTextInput}
-                    ></TextInput>
-                  </View>
-                  <View style={styles.lastNameGrop}>
-                    <Text style={styles.lastName}>Address</Text>
-                    <TextInput
-                      onChangeText={(text) => setLname(text)}
-                      placeholder="Address"
-                      style={styles.lastNameTextInput}
-                    ></TextInput>
-                  </View>
-                  <View style={styles.mobileNoGrop}>
-                    <Text style={styles.mobileNo}>To Be Payable Amount</Text>
-                    <TextInput
-                      onChangeText={(text) => setMobileNumber(text)}
-                      placeholder="Amount"
-                      style={styles.mobileNoTextinput}
-                    ></TextInput>
-                  </View>
-                  <View style={styles.mobileNoGrop1}>
-                    <Text style={styles.mobileNo1}>Cost Per Day</Text>
-                    <TextInput
-                      onChangeText={(text) => setEmail(text)}
-                      placeholder="Amount"
-                      style={styles.mobileNoTextinput1}
-                    ></TextInput>
-                  </View>
-                  <TouchableOpacity style={styles.doucment}>
-                    <Text style={styles.docUpTxt}>Upload Document</Text>
-                  </TouchableOpacity>
+                  {selectedFlag ? (
+                    <View>
+                      <TouchableOpacity
+                        style={styles.profilepicbutton}
+                        disabled={true}
+                      >
+                        <SimpleLineIconsIcon
+                          name="user-follow"
+                          style={styles.icon}
+                        ></SimpleLineIconsIcon>
+                      </TouchableOpacity>
+                      <View style={styles.firstNameGrop}>
+                        <Text style={styles.firstName}>Worker Name</Text>
+                        <TextInput
+                          onChangeText={(text) => setWorkerName(text)}
+                          placeholder="Worker Name"
+                          style={styles.firstNameTextInput}
+                        ></TextInput>
+                      </View>
+                      <View style={styles.lastNameGrop}>
+                        <Text style={styles.lastName}>Address</Text>
+                        <TextInput
+                          onChangeText={(text) => setAddress(text)}
+                          placeholder="Address"
+                          style={styles.lastNameTextInput}
+                        ></TextInput>
+                      </View>
+                      <View style={styles.mobileNoGrop}>
+                        <Text style={styles.mobileNo}>
+                          To Be Payable Amount
+                        </Text>
+                        <TextInput
+                          onChangeText={(text) => setTBAmount(text)}
+                          placeholder="Amount"
+                          style={styles.mobileNoTextinput}
+                        ></TextInput>
+                      </View>
+                      <View style={styles.mobileNoGrop1}>
+                        <Text style={styles.mobileNo1}>Cost Per Day</Text>
+                        <TextInput
+                          onChangeText={(text) => setPDAmount(text)}
+                          placeholder="Amount"
+                          style={styles.mobileNoTextinput1}
+                        ></TextInput>
+                      </View>
+                      <TouchableOpacity style={styles.doucment}>
+                        <Text style={styles.docUpTxt}>Upload Document</Text>
+                      </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.saveButton}
-                    onPress={() => {
-                      //NewSupervisor();
-                      //AddSupervisorDB();
-                    }}
-                  >
-                    <Text style={styles.save}>Save</Text>
-                  </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.saveButton}
+                        onPress={() => {
+                          //NewSupervisor();
+                          AddWorker();
+                        }}
+                      >
+                        <Text style={styles.save}>Save</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View>
+                      <Text style={styles.noWorkerData}>
+                        Please select Site
+                      </Text>
+                    </View>
+                  )}
                 </View>
               </ScrollView>
             </View>
@@ -241,6 +252,17 @@ export const AddWorker = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  noWorkerData: {
+    fontFamily: "roboto-regular",
+    color: "rgba(54,138,236,1)",
+    width: width * 0.9,
+    height: height * 0.045,
+    textAlign: "center",
+    textAlignVertical: "center",
+    marginTop: height * 0.3,
+    marginLeft: width * 0.01,
+    fontSize: height * 0.04,
+  },
   doucment: {
     backgroundColor: "#E6E6E6",
     borderRadius: 100,
@@ -296,7 +318,7 @@ const styles = StyleSheet.create({
     fontFamily: "roboto-regular",
     color: "rgba(54,138,236,1)",
     textAlign: "center",
-    marginLeft: -width * 0.25,
+    marginLeft: -width * 0.0,
     alignSelf: "center",
     width: width * 0.5,
   },

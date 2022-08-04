@@ -1,10 +1,10 @@
 {
   "version": "1",
   "cognitoConfig": {
-    "identityPoolName": "gajuerpidentitypool",
+    "identityPoolName": "gaju_identity_pool",
     "allowUnauthenticatedIdentities": true,
-    "resourceNameTruncated": "gajuerf59c664a",
-    "userPoolName": "gaju_erp_userpool",
+    "resourceNameTruncated": "gajuco2f2f1f7c",
+    "userPoolName": "gaju_user_pool",
     "autoVerifiedAttributes": [
       "email"
     ],
@@ -21,32 +21,38 @@
     "passwordPolicyCharacters": [],
     "requiredAttributes": [
       "email",
-      "name"
+      "name",
+      "preferred_username"
     ],
     "aliasAttributes": [],
     "userpoolClientGenerateSecret": false,
     "userpoolClientRefreshTokenValidity": 30,
     "userpoolClientWriteAttributes": [
+      "address",
+      "family_name",
+      "gender",
+      "given_name",
+      "nickname",
       "phone_number",
-      "email",
-      "name"
-    ],
-    "userpoolClientReadAttributes": [
       "email",
       "name",
-      "phone_number",
-      "email_verified"
+      "preferred_username"
     ],
-    "userpoolClientLambdaRole": "gajuauf59c664a_userpoolclient_lambda_role",
+    "userpoolClientReadAttributes": [
+      "address",
+      "email",
+      "family_name",
+      "gender",
+      "name",
+      "phone_number"
+    ],
+    "userpoolClientLambdaRole": "gajuau2f2f1f7c_userpoolclient_lambda_role",
     "userpoolClientSetAttributes": true,
-    "sharedId": "f59c664a",
-    "resourceName": "gajuauthconfig",
+    "sharedId": "2f2f1f7c",
+    "resourceName": "gajuauthresource",
     "authSelections": "identityPoolAndUserPool",
     "useDefault": "manual",
     "thirdPartyAuth": false,
-    "usernameAttributes": [
-      "email"
-    ],
     "userPoolGroups": true,
     "adminQueries": false,
     "triggers": {},
@@ -55,7 +61,6 @@
       "admin",
       "supervisor"
     ],
-    "adminQueryGroup": "admin",
     "serviceName": "Cognito",
     "usernameCaseSensitive": false,
     "useEnabledMfas": true,
@@ -73,10 +78,10 @@
     },
     "breakCircularDependency": true,
     "dependsOn": [],
-    "permissions": [],
     "authProviders": [],
     "parentStack": {
       "Ref": "AWS::StackId"
-    }
+    },
+    "permissions": []
   }
 }

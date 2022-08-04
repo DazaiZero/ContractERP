@@ -6,7 +6,11 @@ type Users
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -50,7 +54,12 @@ type SiteImages
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -75,7 +84,12 @@ type Sites
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -119,7 +133,12 @@ type Supplier
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -159,7 +178,12 @@ type Materials
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -188,7 +212,12 @@ type Workers
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner
@@ -227,7 +256,12 @@ type Suptransact
   @model
   @auth(
     rules: [
-      { allow: private, provider: iam }
+      { allow: groups, groups: ["Admin"] }
+      {
+        allow: private
+        provider: iam
+        operations: [create, update, delete, read]
+      }
       { allow: public, provider: iam, operations: [create, update, read] }
       {
         allow: owner

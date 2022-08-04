@@ -6,6 +6,7 @@ import {
   Dimensions,
   View,
   PermissionsAndroid,
+  ActivityIndicator,
 } from "react-native";
 import useFonts from "./hooks/useFonts";
 import AppLoading from "expo-app-loading";
@@ -45,6 +46,7 @@ const TRANSITIONS = ["fade", "slide", "none"];
 
 const UnAuthStackNav = createStackNavigator();
 const AuthStackNav = createStackNavigator();
+const AuthStackNavSuper = createStackNavigator();
 const IntroStack = createStackNavigator();
 
 export const UnAuthStack = ({}) => {
@@ -64,44 +66,55 @@ export const UnAuthStack = ({}) => {
   );
 };
 
-export const AuthStack = ({}) => {
+export const AuthStackSuper = ({}) => {
   return (
-    <AuthStackNav.Navigator>
-      <AuthStackNav.Screen
+    <AuthStackNavSuper.Navigator>
+      <AuthStackNavSuper.Screen
         name="Home"
         component={Home_Super}
         options={{ headerShown: false }}
       />
-      {/* Supervisor Stack */}
-      <AuthStackNav.Screen
+      <AuthStackNavSuper.Screen
         name="AddWorker"
         component={AddWorker}
         options={{ headerShown: false }}
       />
-      <AuthStackNav.Screen
+      <AuthStackNavSuper.Screen
         name="SupervisorExpenses"
         component={SupervisorExpenses}
         options={{ headerShown: false }}
       />
-      <AuthStackNav.Screen
+      <AuthStackNavSuper.Screen
         name="WorkerAttendanceSupervisor"
         component={WorkerAttendanceSupervisor}
         options={{ headerShown: false }}
       />
-      <AuthStackNav.Screen
+      <AuthStackNavSuper.Screen
         name="WorkerManagementSupervisor"
         component={WorkerManagementSupervisor}
         options={{ headerShown: false }}
       />
-      <AuthStackNav.Screen
+      <AuthStackNavSuper.Screen
         name="WorkersPayment"
         component={WorkersPayment}
         options={{ headerShown: false }}
       />
+      <AuthStackNavSuper.Screen
+        name="SiteImages"
+        component={SiteImages}
+        options={{ headerShown: false }}
+      />
       {/* //// */}
+    </AuthStackNavSuper.Navigator>
+  );
+};
+
+export const AuthStackAdmin = ({}) => {
+  return (
+    <AuthStackNav.Navigator>
       <AuthStackNav.Screen
-        name="Home_Super"
-        component={Home_Super}
+        name="Home"
+        component={Home}
         options={{ headerShown: false }}
       />
       <AuthStackNav.Screen
@@ -192,22 +205,30 @@ export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [UserToken, setUserToken] = useState(null);
   const [IntroVisited, setIntroVisited] = useState(false);
+  const [userType, setUserType] = useState("");
+  const [username, setUsername] = useState();
 
   const GlobalVariables = {
     fontsLoaded,
+    userType,
+    setUserType,
     setFontsLoaded,
     UserToken,
     setUserToken,
     IntroVisited,
     setIntroVisited,
+    username,
+    setUsername,
   };
 
   const LoadFonts = async () => {
     await useFonts();
+    //await InitApp();
   };
 
   const InitApp = async () => {
     //AsyncStorage.clear();
+
     await AsyncStorage.getItem("IntroVisited", (err, token) => {
       setIntroVisited(token);
     });
@@ -217,11 +238,19 @@ export default function App() {
   };
 
   useEffect(() => {
+    AsyncStorage.getItem("userType", (err, token) => {
+      setUserType(token);
+    });
     console.log("App.js");
     console.log(UserToken);
     console.log(IntroVisited);
     InitApp();
   }, []);
+
+  useEffect(() => {
+    console.log("userType");
+    if (userType) console.log(userType[0]);
+  }, [userType]);
 
   if (!fontsLoaded) {
     return (
@@ -235,6 +264,24 @@ export default function App() {
     );
   }
 
+  const Mainstack = () => {
+    console.log("mainstack");
+    console.log(userType);
+    if (userType != "" && userType != null) {
+      if (userType.match("admin")) {
+        return <AuthStackAdmin></AuthStackAdmin>;
+      }
+      if (userType.match("supervisor")) {
+        return <AuthStackSuper></AuthStackSuper>;
+      }
+    }
+    return (
+      <View>
+        <ActivityIndicator size={"large"} color={"red"} />
+      </View>
+    );
+  };
+
   return (
     <AuthContext.Provider value={GlobalVariables}>
       <StatusBar
@@ -245,7 +292,7 @@ export default function App() {
         hidden={false}
       />
       <NavigationContainer style={styles.container}>
-        {!UserToken ? <AuthStack></AuthStack> : <UnAuthStack></UnAuthStack>}
+        {UserToken ? <Mainstack></Mainstack> : <UnAuthStack></UnAuthStack>}
       </NavigationContainer>
     </AuthContext.Provider>
   );

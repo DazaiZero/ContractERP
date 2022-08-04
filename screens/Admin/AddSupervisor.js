@@ -27,35 +27,48 @@ const { height, width } = Dimensions.get("screen");
 export const AddSupervisor = ({ route, navigation }) => {
   const ErpAuth = useContext(AuthContext);
   const [genderSelected, setSelectedGender] = useState();
-  const [Fname, setFname] = useState();
-  const [Lname, setLname] = useState();
-  const [username, setUsername] = useState();
+  const [Fname, setFname] = useState("User");
+  const [Lname, setLname] = useState("1");
+  const [username, setUsername] = useState("User_1");
   const [TempPassword, setTempPassword] = useState();
-  const [Email, setEmail] = useState();
-  const [MobileNumber, setMobileNumber] = useState();
+  const [Email, setEmail] = useState("vaidya166@gmail.com");
+  const [MobileNumber, setMobileNumber] = useState("+918055832283");
   const [address, setAdress] = useState();
+  const [response, setResponse] = useState();
+
+  const getResponse = async () => {
+    try {
+      let response = await fetch(
+        "https://tx4r4oepuf.execute-api.ap-south-1.amazonaws.com/test/userManagement",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            username: username,
+            email: Email,
+            phone: MobileNumber,
+          }),
+        }
+      );
+      const json = await response.json();
+      console.log("response");
+      console.log(json);
+      setResponse(json);
+      if (json.status == 200) {
+        AddSupervisorDB();
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+    }
+  };
 
   const NewSupervisor = async () => {
     console.log("got Here");
-    let response = await fetch(
-      "https://m535y0zfua.execute-api.ap-south-1.amazonaws.com/dev/userManagement",
-      {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: username,
-          email: Email,
-          phone: MobileNumber,
-        }),
-      }
-    );
-    let json = await response.json().then(() => {
-      AddSupervisorDB();
-    });
-    console.log(json);
+    getResponse();
   };
 
   const AddSupervisorDB = async () => {

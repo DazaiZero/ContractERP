@@ -36,16 +36,30 @@ export const SitesOngoing = ({ route, navigation }) => {
   ];
   const [data, setData] = useState(Loadingdata);
 
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const onRefresh = async () => {
+    setLoading(true);
+    await getSites();
+    setLoading(false);
+  };
+
   const getSites = async () => {
     const userdata = await API.graphql({
       query: listSites,
     }).then((res) => {
+      setLoading(true);
       console.log("res - SiteOngoing");
       console.log(res);
       setData(res.data.listSites.items);
       setLoading(false);
     });
   };
+
+  useEffect(() => {
+    if (data.length > 0) {
+    }
+  }, [data]);
 
   const getImg = async (item) => {
     console.log("Get IMG");
@@ -117,6 +131,7 @@ export const SitesOngoing = ({ route, navigation }) => {
 
   useEffect(() => {
     if (sessionToken != "" && sessionToken != null) {
+      console.log("Token : " + sessionToken);
       getSites();
     }
   }, [sessionToken]);
@@ -154,6 +169,8 @@ export const SitesOngoing = ({ route, navigation }) => {
             <FlatList
               keyExtractor={(item) => item.id}
               data={data}
+              onRefresh={onRefresh}
+              refreshing={isLoading}
               horizontal={false}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollArea1_contentContainerStyle}
@@ -175,13 +192,13 @@ export const SitesOngoing = ({ route, navigation }) => {
                         }}
                       >
                         <Image
-                          //source={getImg()} //{require("../assets/images/viscato-sp-k-office-night-view1.jpg")}
+                          source={require("../../assets/images/viscato-sp-k-office-night-view1.jpg")}
                           /* source={{
                             uri: "https://erp-api-s3-bucket-dev.s3.ap-south-1.amazonaws.com/T/rn_image_picker_lib_temp_33cdaaf6-3643-47b7-ad82-b75b21fa914b.jpg?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFQaCmFwLXNvdXRoLTEiRzBFAiACLf2vVrldnZDD%2BkBlHcBA0%2BSwjvkCuFicU9D%2FpBoKaAIhAInky2n7avDMs5J2cTB8VZcXynRAipAIfSodTCildfN%2FKuQCCB0QARoMNzcxNzI5NzUyNzcwIgx%2FyQbQ4TXgeuzLi3gqwQKGpBio9maxYzWQ3tWr8UP0w62TgFFMt1H7RIsEWfU0tSrYm3bTmw9Nqnmhpla9OldkAlZZ0wa2gDxyZFNANkFffi1xaymVSOL%2BhPJYzv5sITKZApEt9FiLKa6HFTx0uUwGk78bwnzkvlrv20YRSUx3XMG%2F4cVbavi%2BYwPvZ1GYUfxH8u00kiZ18pzF4zJy7nNgmpji%2BFyyLEBQVsBpJoRkmSnDfRihsJOyeVPXfZ3UkYvNbPcAsDv9D4VBXrw%2FSJYYJEfGoeKSs1TIatJzjLJ6TjKTBT8KBKgfpgPjjWSZ9z2M3xCN92Y2yI2x0Mc9iFafpaIt0%2B0xVeqoCk%2F2wlJXkzC8iNdLa6jhcoDlpUt6FS8mj7%2Fr%2Bn4xG9YGtYMcb9VmbkJVZM2u9ZiHlZabSYhqePwA1fHkF5LpaKGVNuEjyfswqKe2kwY6swJhG6eOO9CZrXCxGJh7oq0Nc3odbZXigidem%2BmTHFtGlLsCoD0pXP%2FBcwP%2BwhD9GST3EDBDwBnq5IxR5JgFCypeP0k%2BBSzq7EPuMQJZ%2Fh5C56Gg%2BFhffS4mEvUbezHAI4HBAAere%2BGoXU7Yeyeo%2Ff2qWsIknqnjXXxBVkTXRBaSdnS7SB10lUye7Dly536%2BufitdsL9WklRn9FxnriUBKP%2BjdHUrS7mNfpcBWbWSA1dN3LDVDyd2fFs2Ip6wxWDVEIutvgl01CD1hzx3V7903tIn%2FRZKdAyS7%2FU4vRh5%2BAH6P%2FQODekvgxFRMJ8rLKyIYSx0CbdCbo5HPia9I4viu6GpihlIEEloXlqxI3IUETtGgyevoutZ5%2BbbQnptge7P7H95BDU2weofJDpZvOQvKkMLkwj&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220430T195354Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIA3HLVNQLBEHCFLBOD%2F20220430%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=0454e5abf7c078f249dfc8ad40d230c5a471f966c4fa7b8bed4c60f2dd14c32f",
                           }} */
-                          source={{
+                          /* source={{
                             uri: { getImg },
-                          }}
+                          }} */
                           //source={require("https://erp-api-s3-bucket-dev.s3.ap-south-1.amazonaws.com/T/rn_image_picker_lib_temp_33cdaaf6-3643-47b7-ad82-b75b21fa914b.jpg?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEFQaCmFwLXNvdXRoLTEiRzBFAiACLf2vVrldnZDD%2BkBlHcBA0%2BSwjvkCuFicU9D%2FpBoKaAIhAInky2n7avDMs5J2cTB8VZcXynRAipAIfSodTCildfN%2FKuQCCB0QARoMNzcxNzI5NzUyNzcwIgx%2FyQbQ4TXgeuzLi3gqwQKGpBio9maxYzWQ3tWr8UP0w62TgFFMt1H7RIsEWfU0tSrYm3bTmw9Nqnmhpla9OldkAlZZ0wa2gDxyZFNANkFffi1xaymVSOL%2BhPJYzv5sITKZApEt9FiLKa6HFTx0uUwGk78bwnzkvlrv20YRSUx3XMG%2F4cVbavi%2BYwPvZ1GYUfxH8u00kiZ18pzF4zJy7nNgmpji%2BFyyLEBQVsBpJoRkmSnDfRihsJOyeVPXfZ3UkYvNbPcAsDv9D4VBXrw%2FSJYYJEfGoeKSs1TIatJzjLJ6TjKTBT8KBKgfpgPjjWSZ9z2M3xCN92Y2yI2x0Mc9iFafpaIt0%2B0xVeqoCk%2F2wlJXkzC8iNdLa6jhcoDlpUt6FS8mj7%2Fr%2Bn4xG9YGtYMcb9VmbkJVZM2u9ZiHlZabSYhqePwA1fHkF5LpaKGVNuEjyfswqKe2kwY6swJhG6eOO9CZrXCxGJh7oq0Nc3odbZXigidem%2BmTHFtGlLsCoD0pXP%2FBcwP%2BwhD9GST3EDBDwBnq5IxR5JgFCypeP0k%2BBSzq7EPuMQJZ%2Fh5C56Gg%2BFhffS4mEvUbezHAI4HBAAere%2BGoXU7Yeyeo%2Ff2qWsIknqnjXXxBVkTXRBaSdnS7SB10lUye7Dly536%2BufitdsL9WklRn9FxnriUBKP%2BjdHUrS7mNfpcBWbWSA1dN3LDVDyd2fFs2Ip6wxWDVEIutvgl01CD1hzx3V7903tIn%2FRZKdAyS7%2FU4vRh5%2BAH6P%2FQODekvgxFRMJ8rLKyIYSx0CbdCbo5HPia9I4viu6GpihlIEEloXlqxI3IUETtGgyevoutZ5%2BbbQnptge7P7H95BDU2weofJDpZvOQvKkMLkwj&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20220430T195354Z&X-Amz-SignedHeaders=host&X-Amz-Expires=600&X-Amz-Credential=ASIA3HLVNQLBEHCFLBOD%2F20220430%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Signature=0454e5abf7c078f249dfc8ad40d230c5a471f966c4fa7b8bed4c60f2dd14c32f")}
                           style={{
                             width: width * 0.98,

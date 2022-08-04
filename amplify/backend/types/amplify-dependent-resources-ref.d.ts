@@ -1,22 +1,10 @@
 export type AmplifyDependentResourcesAttributes = {
-    "api": {
-        "gajuerp": {
-            "GraphQLAPIKeyOutput": "string",
-            "GraphQLAPIIdOutput": "string",
-            "GraphQLAPIEndpointOutput": "string"
-        },
-        "AdminQueries": {
-            "RootUrl": "string",
-            "ApiName": "string",
-            "ApiId": "string"
-        }
-    },
     "auth": {
         "userPoolGroups": {
             "adminGroupRole": "string",
             "supervisorGroupRole": "string"
         },
-        "gajuauthconfig": {
+        "gajuauthresource": {
             "IdentityPoolId": "string",
             "IdentityPoolName": "string",
             "UserPoolId": "string",
@@ -26,12 +14,10 @@ export type AmplifyDependentResourcesAttributes = {
             "AppClientID": "string"
         }
     },
-    "function": {
-        "AdminQueriesa326c486": {
-            "Name": "string",
-            "Arn": "string",
-            "Region": "string",
-            "LambdaExecutionRole": "string"
+    "api": {
+        "gajucontracterp": {
+            "GraphQLAPIIdOutput": "string",
+            "GraphQLAPIEndpointOutput": "string"
         }
     }
 }
